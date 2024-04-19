@@ -29,7 +29,7 @@ for i in range(n):
         count = count - 1
     else:
         points[i] = (random.randint(1, 10), random.randint(1, 10), N_TYPE)
-
+print(points)
 input_matrix = []
 for i, vi in points.items():
     m1 = []
@@ -68,6 +68,10 @@ def tsp(input_matrix):
                 if sum_temp < sum_path:
                     sum_path = sum_temp
                     m[2][0][0] = i + 1
+            if points[i][2] == M_TYPE:
+                m[4] += 1
+            else:
+                m[5] += 1
 
     m[3][0][0] = sum_path
 
@@ -100,6 +104,10 @@ def tsp_next(m, s, init_point):
     for i in range(m[0]):
         index = 1 << i
         if s & index != 0:
+            if m[4] == 0 and points[i][2] == M_TYPE:
+                return INF
+            if m[5] == 0 and points[i][2] == N_TYPE:
+                return INF
             if points[i][2] == M_TYPE:
                 m[4] -= 1
             else:
