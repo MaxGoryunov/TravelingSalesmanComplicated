@@ -29,7 +29,12 @@ for i in range(n):
     else:
         points.append(((random.randint(1, 10000), random.randint(1, 10000)), N_TYPE))
 
-
+points = [((148, 138), 'a'), ((346, 448), 'a'), ((278, 752), 'a'),
+          ((758, 39), 'a'), ((860, 750), 'a'), ((39, 952), 'a'),
+          ((514, 241), 'a'), ((637, 862), 'a'), ((85, 79), 'b'),
+          ((622, 58), 'b'), ((786, 555), 'b'), ((580, 268), 'b'),
+          ((1, 45), 'b'), ((775, 789), 'b'), ((988, 260), 'b'),
+          ((762, 599), 'b')]
 # -----------------------------------------------------------------
 def tsp(points):
     n = len(points)
@@ -66,7 +71,7 @@ def tsp(points):
                 else:
                     m[5] -= 2
                 if m[4] > 0 or m[5] > 0:
-                    sum_temp = tsp_next(m, s ^ index, i, current_points) + m[1][i + 1][num]  # delete При необходимости
+                    sum_temp = tsp_next(m, s ^ index, i, current_points, num) + m[1][i + 1][0]  # delete При необходимости
                     if sum_temp < sum_path:
                         sum_path = sum_temp
                         m[2][0][0] = i + 1
@@ -120,7 +125,7 @@ def tsp(points):
 
 
 # -----------------------------------------------------------------
-def tsp_next(m, s, init_point, current_points):
+def tsp_next(m, s, init_point, current_points, num):
     if m[3][s][init_point] != -1:
         return m[3][s][init_point]
     if s == 0:
@@ -139,7 +144,7 @@ def tsp_next(m, s, init_point, current_points):
                 m[4] -= 1
             else:
                 m[5] -= 1
-            sum_temp = tsp_next(m, s ^ index, i, current_points) + m[1][i + 1][init_point + 1]
+            sum_temp = tsp_next(m, s ^ index, i, current_points, num) + m[1][i + 1][init_point + 1]
             if sum_temp < sum_path:
                 sum_path = sum_temp
                 m[2][s][init_point] = i + 1
