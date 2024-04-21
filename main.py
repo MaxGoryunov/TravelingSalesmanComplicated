@@ -29,26 +29,25 @@ for i in range(n):
     else:
         points.append(((random.randint(1, 10000), random.randint(1, 10000)), N_TYPE))
 
-input_matrix = []
-for i, vi in enumerate(points):
-    m1 = []
-    for j, vj in enumerate(points):
-        if i == j:
-            m1.append(INF)
-        else:
-            m1.append(int(distance(vi[0][0], vi[0][1], vj[0][0], vj[0][1])))
-            v1.append([i, j, int(distance(vi[0][0], vi[0][1], vj[0][0], vj[0][1]))])
-    input_matrix.append(m1.copy())
-
 
 # -----------------------------------------------------------------
-def tsp(input_matrix):
-    n = len(input_matrix)
+def tsp(points):
+    n = len(points)
     results = []
-    for num in range(n - 1):
+    for num in range(n):
         current_points = points.copy()
         current_points[0] = points[num]
         current_points[num] = points[0]
+        input_matrix = []
+        for i, vi in enumerate(current_points):
+            m1 = []
+            for j, vj in enumerate(current_points):
+                if i == j:
+                    m1.append(INF)
+                else:
+                    m1.append(int(distance(vi[0][0], vi[0][1], vj[0][0], vj[0][1])))
+                    v1.append([i, j, int(distance(vi[0][0], vi[0][1], vj[0][0], vj[0][1]))])
+            input_matrix.append(m1.copy())
         # Генерация служебных массивов
         s = (1 << (n - 1)) - 1
         path = [0] * s
@@ -92,13 +91,32 @@ def tsp(input_matrix):
             res.append(init_point)
             s = s ^ (1 << init_point - 1)
         res.append(0)  #
-        results.append([sum_path, res, current_points])
+        results.append([sum_path, res, current_points, num])
 
     max_res = results[0]
-    for resul in results:
+    counter = 0
+    for i, resul in enumerate(results):
         if resul[0] < max_res[0]:
             max_res = resul
-    return max_res
+    for i, resul in enumerate(results):
+        if resul[0] == max_res[0]:
+            counter += 1
+    for resul in results:
+        print(resul)
+    print(counter)
+    in_0 = -1
+    in_num = -1
+    if 0 in max_res[1]:
+        in_0 = max_res[1].index(0)
+    if max_res[3] in max_res[1]:
+        in_num = max_res[1].index(max_res[3])
+    if in_0 != -1:
+        max_res[1][in_0] = max_res[3]
+    if in_num != -1:
+        max_res[1][in_num] = 0
+    for ind in max_res[1]:
+        print(points[ind][1])
+    return [max_res[0],max_res[1]]
 
 
 # -----------------------------------------------------------------
@@ -138,6 +156,6 @@ def tsp_next(m, s, init_point, current_points):
 # -----------------------------------------------------------------
 # Расчёт минимальной дистанции
 start_time = datetime.now()
-res = tsp(input_matrix)
+res = tsp(points)
 print(datetime.now() - start_time)
 print(res)
