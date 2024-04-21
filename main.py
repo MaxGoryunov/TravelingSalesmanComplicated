@@ -13,31 +13,31 @@ mm = 5
 nn = 5
 INF = 2 ** 31 - 1
 
-M_TYPE = 0
-N_TYPE = 1
+M_TYPE = 'a'
+N_TYPE = 'b'
 # random.seed(1)
 
 n = M + N
 
 v1 = []
-points = {}
+points = []
 count = M
 for i in range(n):
     if count > 0:
-        points[i] = (random.randint(1, 10), random.randint(1, 10), M_TYPE)
+        points.append(((random.randint(1, 10000), random.randint(1, 10000)), M_TYPE))
         count = count - 1
     else:
-        points[i] = (random.randint(1, 10), random.randint(1, 10), N_TYPE)
+        points.append(((random.randint(1, 10000), random.randint(1, 10000)), N_TYPE))
 
 input_matrix = []
-for i, vi in points.items():
+for i, vi in enumerate(points):
     m1 = []
-    for j, vj in points.items():
+    for j, vj in enumerate(points):
         if i == j:
             m1.append(INF)
         else:
-            m1.append(int(distance(vi[0], vi[1], vj[0], vj[1])))
-            v1.append([i, j, int(distance(vi[0], vi[1], vj[0], vj[1]))])
+            m1.append(int(distance(vi[0][0], vi[0][1], vj[0][0], vj[0][1])))
+            v1.append([i, j, int(distance(vi[0][0], vi[0][1], vj[0][0], vj[0][1]))])
     input_matrix.append(m1.copy())
 
 
@@ -62,16 +62,16 @@ def tsp(input_matrix):
         for i in range(m[0]):
             index = 1 << i
             if s & index != 0:
-                if current_points[i][2] == M_TYPE:
+                if current_points[i][1] == M_TYPE:
                     m[4] -= 2
                 else:
                     m[5] -= 2
                 if m[4] > 0 or m[5] > 0:
-                    sum_temp = tsp_next(m, s ^ index, i,current_points) + m[1][i + 1][num]#delete При необходимости
+                    sum_temp = tsp_next(m, s ^ index, i, current_points) + m[1][i + 1][num]  # delete При необходимости
                     if sum_temp < sum_path:
                         sum_path = sum_temp
                         m[2][0][0] = i + 1
-                if current_points[i][2] == M_TYPE:
+                if current_points[i][1] == M_TYPE:
                     m[4] += 2
                 else:
                     m[5] += 2
@@ -86,12 +86,12 @@ def tsp(input_matrix):
         counter = 0
         for i in range(1, m[0]):
             counter += 1
-            if counter == mm + nn-1:
+            if counter == mm + nn - 1:
                 break
             init_point = int(path[s][init_point - 1])
             res.append(init_point)
             s = s ^ (1 << init_point - 1)
-        res.append(0)#
+        res.append(0)  #
         results.append([sum_path, res, current_points])
 
     max_res = results[0]
@@ -113,19 +113,19 @@ def tsp_next(m, s, init_point, current_points):
     for i in range(m[0]):
         index = 1 << i
         if s & index != 0:
-            if m[4] == 0 and current_points[i + 1][2] == M_TYPE:
+            if m[4] == 0 and current_points[i + 1][1] == M_TYPE:
                 continue
-            if m[5] == 0 and current_points[i + 1][2] == N_TYPE:
+            if m[5] == 0 and current_points[i + 1][1] == N_TYPE:
                 continue
-            if current_points[i + 1][2] == M_TYPE:
+            if current_points[i + 1][1] == M_TYPE:
                 m[4] -= 1
             else:
                 m[5] -= 1
-            sum_temp = tsp_next(m, s ^ index, i,current_points) + m[1][i + 1][init_point + 1]
+            sum_temp = tsp_next(m, s ^ index, i, current_points) + m[1][i + 1][init_point + 1]
             if sum_temp < sum_path:
                 sum_path = sum_temp
                 m[2][s][init_point] = i + 1
-            if current_points[i + 1][2] == M_TYPE:
+            if current_points[i + 1][1] == M_TYPE:
                 m[4] += 1
             else:
                 m[5] += 1
