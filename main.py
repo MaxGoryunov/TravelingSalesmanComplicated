@@ -63,18 +63,18 @@ def tsp(input_matrix):
             index = 1 << i
             if s & index != 0:
                 if current_points[i][2] == M_TYPE:
-                    m[4] -= 1#если сдвиг и возврат здесь делать на 2,чтобы городов стало на 1 меньше, то код падает(
+                    m[4] -= 2
                 else:
-                    m[5] -= 1
+                    m[5] -= 2
                 if m[4] > 0 or m[5] > 0:
                     sum_temp = tsp_next(m, s ^ index, i,current_points) + m[1][i + 1][num]#delete При необходимости
                     if sum_temp < sum_path:
                         sum_path = sum_temp
                         m[2][0][0] = i + 1
                 if current_points[i][2] == M_TYPE:
-                    m[4] += 1
+                    m[4] += 2
                 else:
-                    m[5] += 1
+                    m[5] += 2
 
         m[3][0][0] = sum_path
 
@@ -86,7 +86,7 @@ def tsp(input_matrix):
         counter = 0
         for i in range(1, m[0]):
             counter += 1
-            if counter == mm + nn:
+            if counter == mm + nn-1:
                 break
             init_point = int(path[s][init_point - 1])
             res.append(init_point)
