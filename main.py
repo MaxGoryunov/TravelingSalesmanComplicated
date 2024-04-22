@@ -7,10 +7,10 @@ def distance(x1, y1, x2, y2):
     return mt.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
 
 
-M = 8
-N = 8
-mm = 5
-nn = 5
+M = 6
+N = 6
+mm = 4
+nn = 4
 INF = 2 ** 31 - 1
 
 M_TYPE = 'a'
@@ -28,6 +28,7 @@ for i in range(n):
         count = count - 1
     else:
         points.append(((random.randint(1, 10000), random.randint(1, 10000)), N_TYPE))
+
 
 # points = [((148, 138), 'a'), ((346, 448), 'a'), ((278, 752), 'a'),
 #           ((758, 39), 'a'), ((860, 750), 'a'), ((39, 952), 'a'),
@@ -71,16 +72,16 @@ def tsp(points):
         for i in range(m[0]):
             index = 1 << i
             if s & index != 0:
-                if current_points[i+1][1] == M_TYPE:
+                if current_points[i + 1][1] == M_TYPE:
                     m[4] -= 1
                 else:
                     m[5] -= 1
                 if m[4] > 0 or m[5] > 0:
-                    sum_temp = tsp_next(m, s ^ index, i, current_points) + m[1][i + 1][0]  # delete При необходимости
+                    sum_temp = tsp_next(m, s ^ index, i, current_points) + m[1][i + 1][0]
                     if sum_temp < sum_path:
                         sum_path = sum_temp
                         m[2][0][0] = i + 1
-                if current_points[i+1][1] == M_TYPE:
+                if current_points[i + 1][1] == M_TYPE:
                     m[4] += 1
                 else:
                     m[5] += 1
@@ -135,6 +136,7 @@ def tsp(points):
         else:
             type2 += 1
     print(f"type1={type1}, type2 ={type2}")
+    max_res[1].append(max_res[1][0])
     return [max_res[0], max_res[1]]
 
 
@@ -174,13 +176,110 @@ def tsp_next(m, s, init_point, current_points):
     return sum_path
 
 
+def distance_by_index_in_points(current_points, i, j):
+    return distance(current_points[i][0][0], current_points[i][0][1], current_points[j][0][0], current_points[j][0][1])
+
+
+def brute_force(points):
+    n = len(points)
+    results = []
+    types = [mm, nn, n - 1]
+    for num in range(n):
+        current_points = points.copy()
+        current_points[0] = points[num]
+        current_points[num] = points[0]
+        sum_path = INF
+        opt_path = []
+        s = (1 << (n - 1)) - 1
+        if current_points[0][1] == M_TYPE:
+            types[0] -= 1
+        else:
+            types[1] -= 1
+        for i in range(n - 1):
+            index = 1 << i
+            if s & index != 0:
+                if current_points[i + 1][1] == M_TYPE:
+                    types[0] -= 1
+                else:
+                    types[1] -= 1
+                sum_temp, temp_path = brute_next(types, s ^ index, i, current_points, [0, i+1])
+                sum_temp += distance_by_index_in_points(current_points, i + 1, 0)
+                if sum_temp < sum_path:
+                    sum_path = sum_temp
+                    opt_path = temp_path
+                if current_points[i + 1][1] == M_TYPE:
+                    types[0] += 1
+                else:
+                    types[1] += 1
+
+        if current_points[0][1] == M_TYPE:
+            types[0] += 1
+        else:
+            types[1] += 1
+        results.append([sum_path, opt_path, num])
+
+    max_res = results[0]
+    for el in results:
+        if el[0] < max_res[0]:
+            max_res = el
+    in_0 = -1
+    in_num = -1
+    print(max_res)
+    if 0 in max_res[1]:
+        in_0 = max_res[1].index(0)
+    if max_res[2] in max_res[1]:
+        in_num = max_res[1].index(max_res[2])
+    if in_0 != -1:
+        max_res[1][in_0] = max_res[2]
+    if in_num != -1:
+        max_res[1][in_num] = 0
+    max_res[1].append(max_res[1][0])
+    return max_res
+
+
+def brute_next(types, s, init_point, current_points, opt_path):
+    if s == 0:
+        return distance_by_index_in_points(current_points, 0, init_point + 1), opt_path
+    if types[0] == 0 and types[1] == 0:
+        return distance_by_index_in_points(current_points, 0, init_point + 1), opt_path
+    if types[0] < 0 or types[1] < 0:
+        return INF, []
+    sum_path = INF
+    sum_opt_path = []
+    for i in range(types[2]):
+        index = 1 << i
+        if s & index != 0:
+            if types[0] == 0 and current_points[i + 1][1] == M_TYPE:
+                continue
+            if types[1] == 0 and current_points[i + 1][1] == N_TYPE:
+                continue
+            if current_points[i + 1][1] == M_TYPE:
+                types[0] -= 1
+            else:
+                types[1] -= 1
+            sum_temp, temp_path = brute_next(types, s ^ index, i, current_points, opt_path + [i + 1])
+            sum_temp += distance_by_index_in_points(current_points, i + 1, init_point + 1)
+            if sum_temp < sum_path:
+                sum_path = sum_temp
+                sum_opt_path = temp_path
+            if current_points[i + 1][1] == M_TYPE:
+                types[0] += 1
+            else:
+                types[1] += 1
+
+    return [sum_path, sum_opt_path]
+
+
 # -----------------------------------------------------------------
 # Расчёт минимальной дистанции
 start_time = datetime.now()
 res = tsp(points)
 print(datetime.now() - start_time)
 print(res)
-# res[1].append(res[1][0])
+start_time = datetime.now()
+res_brute = brute_force(points)
+print(datetime.now() - start_time)
+print(res_brute)
 # our_res = res[1]
 # m_res = [1, 2, 7, 13, 4, 15, 10, 11, 9, 6, 1]
 # dist1=0
@@ -189,4 +288,13 @@ print(res)
 #     dist1+=distance(points[our_res[i]][0][0],points[our_res[i]][0][1],points[our_res[i+1]][0][0],points[our_res[i+1]][0][1])
 #     dist2 += distance(points[m_res[i]][0][0], points[m_res[i]][0][1], points[m_res[i + 1]][0][0],
 #                       points[m_res[i + 1]][0][1])
-# print(f"our dist = {dist1}, Misha dist = {dist2}")
+dist1 = 0
+dist2 = 0
+dynamic_res = res[1]
+brute_res = res_brute[1]
+for i in range(len(dynamic_res) - 1):
+    dist1 += distance(points[dynamic_res[i]][0][0], points[dynamic_res[i]][0][1], points[dynamic_res[i + 1]][0][0],
+                      points[dynamic_res[i + 1]][0][1])
+    dist2 += distance(points[brute_res[i]][0][0], points[brute_res[i]][0][1], points[brute_res[i + 1]][0][0],
+                      points[brute_res[i + 1]][0][1])
+print(f"Dynamic dist = {dist1}, Brute dist = {dist2}")
