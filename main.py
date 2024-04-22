@@ -29,12 +29,13 @@ for i in range(n):
     else:
         points.append(((random.randint(1, 10000), random.randint(1, 10000)), N_TYPE))
 
-points = [((148, 138), 'a'), ((346, 448), 'a'), ((278, 752), 'a'),
-          ((758, 39), 'a'), ((860, 750), 'a'), ((39, 952), 'a'),
-          ((514, 241), 'a'), ((637, 862), 'a'), ((85, 79), 'b'),
-          ((622, 58), 'b'), ((786, 555), 'b'), ((580, 268), 'b'),
-          ((1, 45), 'b'), ((775, 789), 'b'), ((988, 260), 'b'),
-          ((762, 599), 'b')]
+# points = [((148, 138), 'a'), ((346, 448), 'a'), ((278, 752), 'a'),
+#           ((758, 39), 'a'), ((860, 750), 'a'), ((39, 952), 'a'),
+#           ((514, 241), 'a'), ((637, 862), 'a'), ((85, 79), 'b'),
+#           ((622, 58), 'b'), ((786, 555), 'b'), ((580, 268), 'b'),
+#           ((1, 45), 'b'), ((775, 789), 'b'), ((988, 260), 'b'), ((762, 599), 'b')]
+
+
 # -----------------------------------------------------------------
 def tsp(points):
     n = len(points)
@@ -63,23 +64,30 @@ def tsp(points):
             local_sum[i] = [-1] * (n - 1)
         m = [n - 1, input_matrix.copy(), path, local_sum, mm, nn]
         sum_path = INF
+        if current_points[0][1] == M_TYPE:
+            m[4] -= 1
+        else:
+            m[5] -= 1
         for i in range(m[0]):
             index = 1 << i
             if s & index != 0:
-                if current_points[i][1] == M_TYPE:
-                    m[4] -= 2
+                if current_points[i+1][1] == M_TYPE:
+                    m[4] -= 1
                 else:
-                    m[5] -= 2
+                    m[5] -= 1
                 if m[4] > 0 or m[5] > 0:
-                    sum_temp = tsp_next(m, s ^ index, i, current_points, num) + m[1][i + 1][0]  # delete При необходимости
+                    sum_temp = tsp_next(m, s ^ index, i, current_points) + m[1][i + 1][0]  # delete При необходимости
                     if sum_temp < sum_path:
                         sum_path = sum_temp
                         m[2][0][0] = i + 1
-                if current_points[i][1] == M_TYPE:
-                    m[4] += 2
+                if current_points[i+1][1] == M_TYPE:
+                    m[4] += 1
                 else:
-                    m[5] += 2
-
+                    m[5] += 1
+        if current_points[0][1] == M_TYPE:
+            m[4] += 1
+        else:
+            m[5] += 1
         m[3][0][0] = sum_path
 
         # Вывод оптимального пути
@@ -119,19 +127,27 @@ def tsp(points):
         max_res[1][in_0] = max_res[3]
     if in_num != -1:
         max_res[1][in_num] = 0
+    type1 = 0
+    type2 = 0
     for ind in max_res[1]:
-        print(points[ind][1])
-    return [max_res[0],max_res[1]]
+        if points[ind][1] == M_TYPE:
+            type1 += 1
+        else:
+            type2 += 1
+    print(f"type1={type1}, type2 ={type2}")
+    return [max_res[0], max_res[1]]
 
 
 # -----------------------------------------------------------------
-def tsp_next(m, s, init_point, current_points, num):
+def tsp_next(m, s, init_point, current_points):
     if m[3][s][init_point] != -1:
         return m[3][s][init_point]
     if s == 0:
         return m[1][0][init_point + 1]
-    if m[4] <= 0 and m[5] <= 0:
+    if m[4] == 0 and m[5] == 0:
         return m[1][0][init_point + 1]
+    if m[4] < 0 or m[5] < 0:
+        return INF
     sum_path = INF
     for i in range(m[0]):
         index = 1 << i
@@ -144,7 +160,7 @@ def tsp_next(m, s, init_point, current_points, num):
                 m[4] -= 1
             else:
                 m[5] -= 1
-            sum_temp = tsp_next(m, s ^ index, i, current_points, num) + m[1][i + 1][init_point + 1]
+            sum_temp = tsp_next(m, s ^ index, i, current_points) + m[1][i + 1][init_point + 1]
             if sum_temp < sum_path:
                 sum_path = sum_temp
                 m[2][s][init_point] = i + 1
@@ -164,3 +180,13 @@ start_time = datetime.now()
 res = tsp(points)
 print(datetime.now() - start_time)
 print(res)
+# res[1].append(res[1][0])
+# our_res = res[1]
+# m_res = [1, 2, 7, 13, 4, 15, 10, 11, 9, 6, 1]
+# dist1=0
+# dist2=0
+# for i in range(len(m_res)-1):
+#     dist1+=distance(points[our_res[i]][0][0],points[our_res[i]][0][1],points[our_res[i+1]][0][0],points[our_res[i+1]][0][1])
+#     dist2 += distance(points[m_res[i]][0][0], points[m_res[i]][0][1], points[m_res[i + 1]][0][0],
+#                       points[m_res[i + 1]][0][1])
+# print(f"our dist = {dist1}, Misha dist = {dist2}")
